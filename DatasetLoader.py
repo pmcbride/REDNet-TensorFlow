@@ -46,7 +46,7 @@ class HDF5DatasetLoader(object):
       selected_inds = np.concatenate((selected_pos_inds, selected_neg_inds))
 
     sorted_inds = np.sort(selected_inds)
-    train_img = self.images[sorted_inds][..., ::-1]#/255.
+    train_img = self.images[sorted_inds][:,:,:,::-1] #/255.
     train_label = self.labels[sorted_inds][...]
     return (train_img, train_label, sorted_inds) if return_inds else (train_img, train_label)
 
