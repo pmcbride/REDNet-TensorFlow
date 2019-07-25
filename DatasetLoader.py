@@ -38,10 +38,11 @@ class HDF5DatasetLoader(object):
 
   def get_batch(self, n, only_faces=False, return_inds=False):
     if only_faces:
-      selected_inds = np.random.choice(self.face_idx, size=n, replace=False)#, p=p_pos)
+      selected_inds = self.face_idx #np.random.choice(self.face_idx, size=n, replace=False)#, p=p_pos)
     else:
-      selected_pos_inds = np.random.choice(self.face_idx, size=n//2, replace=False)#, p=p_pos)
-      selected_neg_inds = np.random.choice(self.notface_idx, size=n//2, replace=False)#, p=p_neg)
+      n_split = n // 2
+      selected_pos_inds = self.face_idx[:n_split] #np.random.choice(self.face_idx, size=n//2, replace=False)#, p=p_pos)
+      selected_neg_inds = self.notface_idx[:n_split] #np.random.choice(self.notface_idx, size=n//2, replace=False)#, p=p_neg)
       selected_inds = np.concatenate((selected_pos_inds, selected_neg_inds))
 
     sorted_inds = np.sort(selected_inds)
