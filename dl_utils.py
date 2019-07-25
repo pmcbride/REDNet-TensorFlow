@@ -109,7 +109,7 @@ def plot_loss_acc(model, target_acc=0.9, title=None):
   target_acc: The desired/ target acc. This parameter is needed for this function to show a horizontal bar.
   """
   val = True
-  epochs = np.array(model.history.epoch) + 1  # Add one to the list of epochs which is zero-indexed
+  epochs = np.array(model.history.epoch)+1 # Add one to the list of epochs which is zero-indexed
   loss = np.array(model.history.history['loss'])
   if val:
     val_loss = np.array(model.history.history['val_loss'])
@@ -117,53 +117,53 @@ def plot_loss_acc(model, target_acc=0.9, title=None):
   if val:
     val_acc = np.array(model.history.history['val_acc'])
   
-  mse = np.array(model.history.history['mean_absolute_error'])
-  val_mse = np.array(model.history.history['val_mean_absolute_error'])
+  mse = np.array(model.history.history['mean_squared_error'])
+  val_mse = np.array(model.history.history['val_mean_squared_error'])
   
   fig = plt.figure(figsize=(15, 4))
   fig.subplots_adjust(wspace=.75)
-  # fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    #fig.tight_layout()  # otherwise the right y-label is slightly clipped
   if title:
     fig.suptitle(title)
-  #   plt.hlines(y=target_acc, xmin=1, xmax=epochs.max(),colors='k', linestyles='dashed', lw=3)
-
-  # ax1 = plt.subplot(1, 3, 1)
+#   plt.hlines(y=target_acc, xmin=1, xmax=epochs.max(),colors='k', linestyles='dashed', lw=3)
+  
+  #ax1 = plt.subplot(1, 3, 1)
   ax1 = plt.subplot(1, 2, 1)
   color = 'tab:red'
-  ax1.set_xlabel('Epochs', fontsize=15)
-  ax1.set_ylabel('Loss', color=color, fontsize=15)
+  ax1.set_xlabel('Epochs',fontsize=15)
+  ax1.set_ylabel('Loss', color=color,fontsize=15)
   ax1.plot(epochs, loss, color=color, lw=2)
   if val:
     ax1.plot(epochs, val_loss, color=color, lw=2, linestyle='dashed')
     plt.legend(['train', 'validate'], loc='lower left')
   ax1.tick_params(axis='y', labelcolor=color)
   ax1.grid(True)
-  
+
   ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-  
+
   color = 'tab:blue'
-  ax2.set_ylabel('Accuracy', color=color, fontsize=15)  # we already handled the x-label with ax1
-  ax2.plot(epochs, acc, color=color, lw=2)
+  ax2.set_ylabel('Accuracy', color=color,fontsize=15)  # we already handled the x-label with ax1
+  ax2.plot(epochs, acc, color=color,lw=2)
   if val:
     ax2.plot(epochs, val_acc, color=color, lw=2, linestyle='dashed')
     plt.legend(['train acc', 'validate acc'], loc='upper right')
   ax2.tick_params(axis='y', labelcolor=color)
   
-  #   ax0 = plt.subplot(1,3,2)
-  #   ax0.axis('off')
-
-  # ax3 = plt.subplot(1, 3, 3)
+#   ax0 = plt.subplot(1,3,2)
+#   ax0.axis('off')
+  
+  #ax3 = plt.subplot(1, 3, 3)
   ax3 = plt.subplot(1, 2, 2)
   color = 'tab:red'
-  ax3.set_xlabel('Epochs', fontsize=15)
-  ax3.set_ylabel('Mean Absolute Error', color=color, fontsize=15)
+  ax3.set_xlabel('Epochs',fontsize=15)
+  ax3.set_ylabel('Mean Absolute Error', color=color,fontsize=15)
   ax3.plot(epochs, mse, color=color, lw=2)
   if val:
     ax3.plot(epochs, val_mse, color=color, lw=2, linestyle='dashed')
     plt.legend(['train', 'validate'], loc='lower left')
   ax3.tick_params(axis='y', labelcolor=color)
   ax3.grid(True)
-  
+
   plt.show()
 
 
