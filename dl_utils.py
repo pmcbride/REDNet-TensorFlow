@@ -41,15 +41,19 @@ def save_image_batch_cv2(dataset, DATA_DIR="./data"):
     cv2.imwrite(img_name, dataset[i])
   print("Saving Complete!")
 
-# save_image_batch(imageset)
-# save_image_batch_cv2(imageset)
-
 def save_keras_model(model, filename="model", dirname="."):
+  # Create timestamp
+  from datetime import datetime
+  timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+  # Save model to yaml
   model_yaml = model.to_yaml()
   yaml_filepath = os.path.join(dirname, filename + ".yaml")
   with open(yaml_filepath, "w") as yaml_file:
     yaml_file.write(model_yaml)
   print("Saved yaml file: {}".format(yaml_filepath))
+
+  # Save weights to HDF5
   weights_filepath = os.path.join(dirname, filename + ".h5")
   model.save_weights(weights_filepath)
   print("Saved weights file: {}".format(weights_filepath))
@@ -108,64 +112,42 @@ def plot_loss_acc(model, target_acc=0.9, title=None):
   Users can supply a title if needed
   target_acc: The desired/ target acc. This parameter is needed for this function to show a horizontal bar.
   """
+   
   val = True
   epochs = np.array(model.history.epoch)+1 # Add one to the list of epochs which is zero-indexed
-  loss = np.array(model.history.history['loss'])
-  if val:
-    val_loss = np.array(model.history.history['val_loss'])
-  acc = np.array(model.history.history['acc'])
-  if val:
-    val_acc = np.array(model.history.history['val_acc'])
+  keys = model.history.history.keys()
+  n_keys = len(model.history.history.keys())
   
-  mse = np.array(model.history.history['mean_squared_error'])
-  val_mse = np.array(model.history.history['val_mean_squared_error'])
-  
-  fig = plt.figure(figsize=(15, 4))
+  # Create Figure
+  nrows = 1
+  ncols = n_keys // 2 if val else n_keys
+  fig, ax = plt.subplots(nrows=1, ncols=ncols, figsize=(15, 4))
   fig.subplots_adjust(wspace=.75)
-    #fig.tight_layout()  # otherwise the right y-label is slightly clipped
   if title:
     fig.suptitle(title)
-#   plt.hlines(y=target_acc, xmin=1, xmax=epochs.max(),colors='k', linestyles='dashed', lw=3)
-  
-  #ax1 = plt.subplot(1, 3, 1)
-  ax1 = plt.subplot(1, 2, 1)
-  color = 'tab:red'
-  ax1.set_xlabel('Epochs',fontsize=15)
-  ax1.set_ylabel('Loss', color=color,fontsize=15)
-  ax1.plot(epochs, loss, color=color, lw=2)
-  if val:
-    ax1.plot(epochs, val_loss, color=color, lw=2, linestyle='dashed')
-    plt.legend(['train', 'validate'], loc='lower left')
-  ax1.tick_params(axis='y', labelcolor=color)
-  ax1.grid(True)
+      
+  for i, key in enumerate(keys):
+    metric = np.array(model.history.history.get(key))
+    if val:
+      val_i = i + n_keys // 2
+      val_key = "val_" + key
+      val_metric = np.array(model.history.history.get(val_key))
+      if i == ncols:
+        break
 
-  ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-
-  color = 'tab:blue'
-  ax2.set_ylabel('Accuracy', color=color,fontsize=15)  # we already handled the x-label with ax1
-  ax2.plot(epochs, acc, color=color,lw=2)
-  if val:
-    ax2.plot(epochs, val_acc, color=color, lw=2, linestyle='dashed')
-    plt.legend(['train acc', 'validate acc'], loc='upper right')
-  ax2.tick_params(axis='y', labelcolor=color)
-  
-#   ax0 = plt.subplot(1,3,2)
-#   ax0.axis('off')
-  
-  #ax3 = plt.subplot(1, 3, 3)
-  ax3 = plt.subplot(1, 2, 2)
-  color = 'tab:red'
-  ax3.set_xlabel('Epochs',fontsize=15)
-  ax3.set_ylabel('Mean Absolute Error', color=color,fontsize=15)
-  ax3.plot(epochs, mse, color=color, lw=2)
-  if val:
-    ax3.plot(epochs, val_mse, color=color, lw=2, linestyle='dashed')
-    plt.legend(['train', 'validate'], loc='lower left')
-  ax3.tick_params(axis='y', labelcolor=color)
-  ax3.grid(True)
-
+    ax[i] = plt.subplot(nrows, ncols, i+1)
+    color = 'tab:red'
+    ax[i].set_xlabel('Epochs', fontsize=15)
+    ax[i].set_ylabel(key, color=color, fontsize=15)
+    ax[i].plot(epochs, metric, color=color, lw=2)
+    if val:
+      ax[i].plot(epochs, val_metric, color=color, lw=2, linestyle='dashed')
+      plt.legend(['train', 'validate'], loc='lower left')
+    ax[i].tick_params(axis='y', labelcolor=color)
+    ax[i].grid(True)
+    #ax[i].title.set_text(key)
+    ax[i].set_title(key, fontsize=15)
   plt.show()
-
 
 # plot_loss_acc(rednet_binary, title="Title")
 

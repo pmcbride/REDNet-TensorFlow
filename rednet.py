@@ -25,14 +25,14 @@ INPUT_SHAPE = (64, 64, 3)
 n_outputs = 1 # number of outputs (i.e., face or not face)
 
 
-def REDNet(input_shape=(64, 64, 3), loss_fn='mse'):
+def REDNet(input_shape=(64, 64, 3), final_activation='relu'):
   """
   Define the encoder network for the REDNet Autoencoder
   """
   params = dict(kernel_size=(3, 3),
                 strides=(1, 1),
                 padding='same',
-                use_bias=False)
+                use_bias=True)
   inputs = layers.Input(shape=input_shape)  # inputs skips to end
   conv1 = _conv_block(inputs, conv_id=1)
   conv2 = _conv_block(conv1, conv_id=2)  # conv2 skips to deconv8
@@ -58,22 +58,24 @@ def REDNet(input_shape=(64, 64, 3), loss_fn='mse'):
   deconv8 = _deconv_block(deconv7, deconv_id=8)
   skip4 = _skip_block(conv2, deconv8, skip_id=4)  # skip4
   deconv9 = _deconv_block(skip4, deconv_id=9)
-  deconv10 = _deconv_block(deconv9, deconv_id=10)
-  deconv10_flatten = layers.Conv2D(3, (1, 1), padding='same', name="deconv10_flatten")(deconv10)
-  # skip5 = _skip_block(inputs, deconv10_flatten, skip_id=5) # skip5
-  skip5 = inputs + deconv10_flatten
+  deconv10 = _deconv_block(deconv9, filters=3, deconv_id=10)
+  #deconv10_flatten = layers.Conv2D(3, (1, 1), padding='same', name="deconv10_flatten")(deconv10)
+  skip5 = _skip_block(inputs, deconv10, skip_id=5) # skip5
+  #skip5 = tf.add(inputs, deconv10_flatten)
   
-  if loss_fn == 'binary':
+  if final_activation == 'sigmoid':
     decoded = layers.Activation('sigmoid', name="sigmoid_decoded_layer")(skip5)
-  elif loss_fn == 'mse':
-    decoded = layers.ReLU(1, name="relu_decoded_layer")(skip5)
+  elif final_activation == 'relu':
+    decoded = skip5
+    #decoded = layers.ReLU(name="relu_decoded_layer")(skip5)
+  elif final_activation == 'relu_1':
+    decoded = layers.ReLU(1, name="relu_1_decoded_layer")(skip5)
   
   print("decoded: ", decoded)
   # finalize the model
   model = tf.keras.Model(inputs=inputs, outputs=decoded, name='REDNet10')
   
   return model
-
 
 def _conv_block(inputs, filters=32, kernel_size=(3, 3), strides=(1, 1), conv_id=1):
   x = layers.Conv2D(filters, kernel_size, strides,
@@ -82,7 +84,6 @@ def _conv_block(inputs, filters=32, kernel_size=(3, 3), strides=(1, 1), conv_id=
                     name=f'conv{conv_id}')(inputs)
   return x
 
-
 def _deconv_block(inputs, filters=32, kernel_size=(3, 3), strides=(1, 1), deconv_id=1):
   x = layers.Conv2DTranspose(filters, kernel_size, strides,
                              activation='relu',  # depth_multiplier=3,
@@ -90,7 +91,6 @@ def _deconv_block(inputs, filters=32, kernel_size=(3, 3), strides=(1, 1), deconv
                              name=f'deconv{deconv_id}')(inputs)
   return x
 
-
 def _skip_block(input1, input2, skip_id=1):
-  x = input1 + input2
+  x = tf.add(input1, input2)
   return layers.ReLU(name=f'skip{skip_id}_relu')(x)
