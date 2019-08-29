@@ -4,6 +4,6 @@ My implementation of the REDNet Skip-connection Encoder-Decoder Network for imag
 
 ### Reference
 - [Image Restoration Using Convolutional Auto-encoders
-   with Symmetric Skip Connections](https://arxiv.org/abs/1704.04861)
+   with Symmetric Skip Connections](https://arxiv.org/abs/1606.08921)
 
 
