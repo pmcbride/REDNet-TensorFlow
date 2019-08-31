@@ -106,7 +106,7 @@ def plot_progress(batch_org, batch_in, batch_out, figsize=(15, 5)):
   plt.show()
 
 
-def plot_loss_acc(model, target_acc=0.9, title=None):
+def plot_loss_acc(model, title=None):
   """
   Takes a deep learning model and plots the loss ans accuracy over epochs
   Users can supply a title if needed
@@ -149,24 +149,84 @@ def plot_loss_acc(model, target_acc=0.9, title=None):
     ax[i].set_title(key, fontsize=15)
   plt.show()
 
-# plot_loss_acc(rednet_binary, title="Title")
+def myplot(img_batch, autoscale=False, title=None, ncols=0):
+  batch_shape = img_batch.shape
+  batch_dim = img_batch.ndim
+  images = img_batch.copy() #if batch_dim == 4 else tf.expand_dims(img_batch, 0)
+  if images.max() <= 1:
+    clip_max = 1
+  else:
+    clip_max = 255
 
-def myplot(img_batch, autoscale=False):
-  n = 10
-  plt.figure(figsize=(20, 2))
-  for i in range(n):
-    ax = plt.subplot(1, n + 1, i + 1)
-    img = np.array(img_batch[i])
+  print(f"batch_shape: {batch_shape}, batch_dim: {batch_dim}, clip_max: {clip_max}")
+
+  if batch_dim == 2:
+    images = np.expand_dims(images, -1)
+    images = np.expand_dims(images, 0)
+  elif batch_dim == 3:
+    images = np.expand_dims(images, 0)
+  elif batch_dim == 4:
+    images = images
+  else:
+    print(f"Dimension of input batch ({batch_dim}) incompatible")
+    return
+
+  nrows = 1
+  if not ncols:
+    ncols = len(images)
+
+  fig, ax = plt.subplots(nrows=1, ncols=ncols, figsize=(2*ncols, 2))
+  if title:
+    fig.suptitle(title, ha='left')
+
+  if ncols == 1:
+    ax = plt.subplot(nrows, ncols, 1)
+    img = np.array(images[0])
     if autoscale:
       img_gray = np.array(img).mean(axis=-1)
       img_mean = img_gray.mean()
-      img = (img - img_gray.min()) / img_gray.ptp()
-      img = np.clip(img, 0, 1)
+      img = (img-img_gray.min())/img_gray.ptp()
+      img = np.clip(img, 0, clip_max)
+    elif not autoscale:
+      img = np.clip(img, 0, clip_max)
     plt.imshow(img)
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
+  elif ncols > 1:
+    for i in range(ncols):
+      ax[i] = plt.subplot(nrows, ncols, i+1)
+      img = np.array(images[i])
+      if autoscale:
+        img_gray = np.array(img).mean(axis=-1)
+        img_mean = img_gray.mean()
+        img = (img-img_gray.min())/img_gray.ptp()
+        img = np.clip(img, 0, clip_max)
+        #img = tf.clip_by_value(img, 0, clip_max)
+      elif not autoscale:
+        img = np.clip(img, 0, clip_max)
+        #img = tf.clip_by_value(img, 0, clip_max)
+      plt.imshow(img)
+
+      ax[i].get_xaxis().set_visible(False)
+      ax[i].get_yaxis().set_visible(False)
   plt.show()
 
+#--------------------------------------------
+
+def plot_encode_decode(img, cv2_img=False):
+  x_img = np.array(img)
+  if img.max() < 1:
+    x_img = np.multiply(img, 255)
+  img_encode = cv2.imencode('.jpg', x_img, [cv2.IMWRITE_JPEG_QUALITY, 25])[1]
+  img_data = np.array(img_encode)
+  img_decode = cv2.imdecode(img_data, cv2.IMREAD_COLOR)
+  if cv2_img:
+    cv2_imshow(x_img)
+  else:
+    plt.imshow(img_decode)
+  plt.show()
+
+#--------------------------------------------
 
 def myplot_history(model):
   history = model.history.history
