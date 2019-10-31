@@ -40,9 +40,9 @@ def process_images_compact(image_list):
     #%run sr.py --file os.path.join(VIDEO_SAVE_DIR, im)
 
 if __name__ == "__main__":
-    save_dir = "C:\\Users\\Patrick\\OneDrive\\Code\\data\\videos\\images_test_srgan-tf"
+    save_dir = "../data/images/images_test_srgan-tf"
     video_dir = "../data/videos"
-    video_file = "../data/videos/angel_eyes3_big.wmv"
+    video_file = "../data/videos/video.mp4"
 
     # Define absolute directory paths
     ROOT_DIR = os.getcwd()
